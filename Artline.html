@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Artline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+/* ── DESIGN TOKENS ──────────────────────────────────────────────────
+   Primary:   #000000 / #FFFFFF  — structure, text, backgrounds
+   Accent:    #CA9BAA (Mauve), #A4B4BE (Fog), #827C36 (Moss)
+   Deep:      #410816 (Cabernet) — selected states, logo
+   ──────────────────────────────────────────────────────────────── */
+:root {
+  --black: #0A0A0A;
+  --white: #FFFFFF;
+  --gray-100: #F5F5F5;
+  --gray-200: #E8E8E8;
+  --gray-400: #AAAAAA;
+  --gray-600: #666666;
+  --mauve: #CA9BAA;
+  --fog: #A4B4BE;
+  --moss: #827C36;
+  --cabernet: #410816;
+  --border: rgba(0,0,0,0.08);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--white);
+  color: var(--black);
+  height: 100vh;
+  overflow: hidden;
+}
+/* When drawer is open, timeline elements shift left to make room
+   This is called "content reflow" — the layout responds to the drawer */
+body.drawer-open #cv,
+body.drawer-open .narr,
+body.drawer-open #connSvg,
+body.drawer-open .ep,
+body.drawer-open .scrub,
+body.drawer-open .tks {
+  right: 380px;
+  transition: right 0.42s cubic-bezier(0.16,1,0.3,1);
+}
+
+/* ── HEADER ─────────────────────────────────────────────────────── */
+.hd {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  height: 56px; display: flex; align-items: center;
+  padding: 0 32px; gap: 24px;
+  background: rgba(255,255,255,0.94);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 22px; font-weight: 400;
+  color: var(--black); letter-spacing: -0.02em; white-space: nowrap;
+}
+
+/* Search — "search field" in design terms is an input with affordance cues */
+.sw { flex: 1; max-width: 320px; margin: 0 auto; position: relative; }
+.si {
+  width: 100%; height: 34px;
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200); border-radius: 4px;
+  padding: 0 14px 0 34px;
+  font-family: 'DM Sans', sans-serif; font-size: 12.5px;
+  color: var(--black); outline: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+.si::placeholder { color: var(--gray-400); }
+.si:focus { background: var(--white); border-color: var(--black); }
+
+/* Search icon — a small SVG inline */
+.sw::before {
+  content: '';
+  position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+  width: 12px; height: 12px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Ccircle cx='6' cy='6' r='4.5' stroke='%23AAAAAA' stroke-width='1.5'/%3E%3Cpath d='M10 10l3.5 3.5' stroke='%23AAAAAA' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;
+  pointer-events: none; z-index: 1;
+}
+
+.sd {
+  position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+  background: var(--white); border: 1px solid var(--gray-200);
+  border-radius: 6px; z-index: 300; display: none; overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+}
+.sdi {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; cursor: pointer; font-size: 13px;
+  border-bottom: 1px solid var(--gray-100); transition: background 0.1s;
+}
+.sdi:last-child { border-bottom: none; }
+.sdi:hover { background: var(--gray-100); }
+.sdot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.sn { flex: 1; font-weight: 400; }
+.sm { font-size: 11px; color: var(--gray-400); }
+
+.se { padding: 16px; }
+.sem { font-size: 13px; color: #333333; margin-bottom: 12px; line-height: 1.5; }
+.ab {
+  width: 100%; padding: 10px 14px; background: var(--black); color: var(--white);
+  border: none; border-radius: 4px; font-family: 'DM Sans', sans-serif;
+  font-size: 12px; font-weight: 500; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: opacity 0.15s;
+}
+.ab:hover { opacity: 0.85; }
+.ab:disabled { opacity: 0.4; cursor: not-allowed; }
+.asp { width: 10px; height: 10px; border: 1.5px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin .6s linear infinite; display:none; }
+.an { font-size: 11px; color: var(--gray-400); margin-top: 8px; text-align: center; }
+.ae { font-size: 11px; color: #CC3333; margin-top: 6px; display: none; }
+.ao { font-size: 11px; color: var(--moss); margin-top: 6px; display: none; font-weight: 500; }
+
+.hr { display: flex; align-items: center; gap: 16px; margin-left: auto; }
+
+/* Legend — the key that explains what each color means */
+.leg { display: flex; align-items: center; gap: 14px; }
+.li { display: flex; align-items: center; gap: 6px; font-size: 10.5px; color: #333333; letter-spacing: 0.04em; }
+.ld { width: 6px; height: 6px; border-radius: 50%; }
+
+.surp {
+  font-size: 11px; font-weight: 500; color: var(--black);
+  background: transparent; border: 1px solid var(--gray-200);
+  border-radius: 4px; padding: 6px 14px; cursor: pointer;
+  white-space: nowrap; transition: all 0.15s; font-family: 'DM Sans', sans-serif;
+}
+.surp:hover { background: var(--black); color: var(--white); border-color: var(--black); }
+
+/* ── CANVAS ─────────────────────────────────────────────────────── */
+#cv { position: fixed; top: 0; left: 0; right: 0; height: 100vh; }
+
+/* ── NARRATIVE OVERLAY ──────────────────────────────────────────────
+   This is the "display moment" — the large serif reveal inspired by Getty.
+   "Overlay" because it floats above the canvas without blocking interaction.
+   ──────────────────────────────────────────────────────────────── */
+.narr {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none; z-index: 50;
+}
+.narr-name {
+  position: absolute;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-weight: 300;
+  /* This font-size transition is called a "typographic scale shift" */
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  white-space: nowrap;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  pointer-events: none;
+}
+.narr-bio {
+  position: absolute;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 300;
+  color: #333333;
+  max-width: 280px; line-height: 1.65;
+  transition: opacity 0.5s ease 0.1s, transform 0.5s ease 0.1s;
+  pointer-events: none;
+}
+.narr-year {
+  position: absolute;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px; font-weight: 500;
+  color: var(--gray-400); letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+/* ── ERA INDICATOR ──────────────────────────────────────────────── */
+.ep {
+  position: fixed; bottom: 62px; left: 32px;
+  font-size: 9.5px; font-weight: 500; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--gray-400);
+  pointer-events: none;
+}
+
+/* ── SCRUBBER — "progress indicator" in UX terms ────────────────── */
+.scrub {
+  position: fixed; bottom: 20px; left: 80px; right: 80px; transition: right 0.42s cubic-bezier(0.16,1,0.3,1);
+  height: 24px; display: flex; align-items: center;
+  cursor: pointer; z-index: 100;
+}
+.st { flex: 1; height: 1px; background: var(--gray-200); position: relative; }
+.sf { position: absolute; left: 0; top: 0; bottom: 0; background: var(--black); }
+.sth {
+  position: absolute; top: 50%; transform: translate(-50%, -50%);
+  width: 7px; height: 7px; background: var(--black); border-radius: 50%;
+}
+.sy {
+  position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
+  font-size: 10px; color: var(--black); font-weight: 500;
+  pointer-events: none; white-space: nowrap;
+  font-family: 'DM Sans', sans-serif;
+}
+.tks { position: fixed; bottom: 14px; left: 80px; right: 80px; pointer-events: none; transition: right 0.42s cubic-bezier(0.16,1,0.3,1); }
+.tk { position: absolute; font-size: 9px; color: var(--gray-400); transform: translateX(-50%); }
+
+/* ── SIDE DRAWER ─────────────────────────────────────────────────
+   A "drawer" slides in from the right edge — the timeline stays
+   fully visible and interactive on the left. No context loss.
+   Width is ~380px — "inspector panel" width in design convention.
+   ──────────────────────────────────────────────────────────────── */
+.modal {
+  position: fixed; top: 56px; right: 0; bottom: 0;
+  width: 380px; z-index: 400; pointer-events: none;
+  transform: translateX(100%);
+  transition: transform 0.42s cubic-bezier(0.16,1,0.3,1);
+}
+.modal.open {
+  pointer-events: all;
+  transform: translateX(0);
+}
+
+/* The panel itself — full height, white surface with left border */
+.mp {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--white);
+  border-left: 1px solid var(--gray-200);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+/* No scrim needed — timeline stays live behind the drawer */
+.mscrim { display: none; }
+
+/* Scrollable content area inside drawer */
+.ml {
+  padding: 28px 22px 20px; border-bottom: 1px solid var(--gray-100);
+  overflow-y: auto; display: flex; flex-direction: column;
+  flex: 0 0 auto; max-height: 60%;
+}
+.mr { padding: 20px 22px 28px; overflow-y: auto; flex: 1; }
+
+/* "Badge" — a small labeled chip used to categorize content */
+.mbadge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 2px;
+  font-size: 9.5px; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; margin-bottom: 14px; align-self: flex-start;
+  border: 1px solid;
+}
+
+.mname {
+  font-family: 'Cormorant Garamond', serif; font-style: italic;
+  font-size: 30px; font-weight: 400; line-height: 1.05;
+  margin-bottom: 6px; color: var(--black);
+}
+.mmeta { font-size: 11.5px; color: var(--gray-400); margin-bottom: 18px; line-height: 1.7; letter-spacing: 0.02em; }
+.mdiv { height: 1px; background: var(--gray-100); margin-bottom: 18px; }
+.mbio { font-size: 13px; line-height: 1.8; color: #333333; margin-bottom: 22px; font-weight: 300; }
+
+/* "Label" — small uppercase text identifying a section */
+.mlbl { font-size: 9px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray-400); margin-bottom: 10px; }
+.mw { font-size: 12.5px; font-style: italic; color: var(--black); padding: 4px 0; border-bottom: 1px solid var(--gray-100); font-family: 'Cormorant Garamond', serif; font-weight: 400; }
+
+.mcc { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0 12px; }
+.mcdl { font-size: 9px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+.mcf {
+  display: flex; align-items: center; gap: 7px; padding: 5px 7px;
+  border-radius: 3px; cursor: pointer; transition: background 0.1s; margin-bottom: 2px;
+}
+.mcf:hover { background: var(--gray-100); }
+.mcfd { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.mcfn { font-size: 12px; color: var(--black); flex: 1; }
+.mcft { font-size: 10px; color: var(--gray-400); }
+
+.mcls {
+  position: absolute; top: 14px; right: 14px;
+  width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 18px; color: var(--gray-400);
+  background: transparent; border: none; border-radius: 3px;
+  transition: all 0.15s; z-index: 10; font-family: sans-serif;
+}
+.mcls:hover { background: var(--gray-100); color: var(--black); }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes drawLine {
+  from { stroke-dashoffset: 1000; }
+  to { stroke-dashoffset: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hd">
+  <div class="logo">Artline</div>
+  <div class="sw">
+    <input class="si" id="sinput" type="text" placeholder="Search any artist, composer, author…" oninput="onSearch(this.value)" autocomplete="off"/>
+    <div class="sd" id="sdd"></div>
+  </div>
+  <div class="hr">
+    <div class="leg">
+      <div class="li"><div class="ld" style="background:#CA9BAA"></div>Visual Art</div>
+      <div class="li"><div class="ld" style="background:#A4B4BE"></div>Music</div>
+      <div class="li"><div class="ld" style="background:#827C36"></div>Literature</div>
+    </div>
+    <button class="surp" onclick="surprise()">Surprise me</button>
+  </div>
+</div>
+
+<!-- CANVAS — all timeline drawing happens here -->
+<canvas id="cv"></canvas>
+
+<!-- NARRATIVE OVERLAY — the display moment layer -->
+<div class="narr" id="narr"></div>
+
+<!-- CONNECTION LINES SVG — drawn above canvas, below modal -->
+<svg id="connSvg" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:49"></svg>
+
+<!-- ERA INDICATOR -->
+<div class="ep" id="ep">Renaissance · 1400–1600</div>
+
+<!-- SCRUBBER -->
+<div class="scrub" id="scrub">
+  <div class="st">
+    <div class="sf" id="sfill"></div>
+    <div class="sth" id="sthumb"><div class="sy" id="syear">1500</div></div>
+  </div>
+</div>
+<div class="tks" id="tks"></div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+  <div class="mp" id="mpanel">
+    <button class="mcls" onclick="closeModal()">×</button>
+    <div class="ml" id="mleft"></div>
+    <div class="mr" id="mright"></div>
+  </div>
+</div>
+
+<script>
+// ── DESIGN SYSTEM DATA ──────────────────────────────────────────────
+// Each discipline has: a color (accent), rgb values for alpha blending,
+// a badge style, and a label. This is called a "design token map."
+const DC = {
+  art:        { color:'#CA9BAA', r:202,g:155,b:170, label:'Visual Art',  badge:'border-color:#CA9BAA;color:#CA9BAA;',  dot:'#CA9BAA' },
+  music:      { color:'#A4B4BE', r:164,g:180,b:190, label:'Music',       badge:'border-color:#A4B4BE;color:#A4B4BE;',  dot:'#A4B4BE' },
+  literature: { color:'#827C36', r:130,g:124,b:54,  label:'Literature',  badge:'border-color:#827C36;color:#827C36;',  dot:'#827C36' }
+};
+const DISCS = ['art','music','literature'];
+
+const ERAS = [
+  {n:'Medieval',         s:1098, e:1400},
+  {n:'Renaissance',      s:1400, e:1600},
+  {n:'Baroque',          s:1600, e:1750},
+  {n:'Classical',        s:1750, e:1820},
+  {n:'Romanticism',      s:1820, e:1860},
+  {n:'Realism & Impressionism', s:1860, e:1910},
+  {n:'Modernism',        s:1910, e:1945},
+  {n:'Contemporary',     s:1945, e:2025}
+];
+
+const FIGS = [
+  {id:'chopin',d:'music',n:'Frédéric Chopin',b:1810,e:1849,mv:'Romanticism',bio:'Polish-French composer devoted almost entirely to the piano whose nocturnes and ballades redefined what the instrument could express — introspective, lyrical, and profound.',wk:['Nocturnes','Ballade No. 1 in G minor','Piano Concerto No. 1'],nat:'Polish-French'},
+  {id:'delacroix',d:'art',n:'Eugène Delacroix',b:1798,e:1863,mv:'Romanticism',bio:"The great Romantic painter of France. Liberty Leading the People is an iconic image of revolution — his work pulses with color, movement, and emotional intensity.",wk:['Liberty Leading the People','The Death of Sardanapalus','Women of Algiers'],nat:'French'},
+  {id:'beethoven',d:'music',n:'Ludwig van Beethoven',b:1770,e:1827,mv:'Classical–Romantic',bio:'The pivotal figure between Classical and Romantic eras whose nine symphonies changed music forever — all composed while losing his hearing.',wk:['Symphony No. 9','Moonlight Sonata','Symphony No. 5'],nat:'German'},
+  {id:'shakespeare',d:'literature',n:'William Shakespeare',b:1564,e:1616,mv:'Renaissance',bio:"English playwright widely regarded as the greatest writer in the English language. His 37 plays explore the full range of human experience with unmatched psychological insight.",wk:['Hamlet','King Lear',"A Midsummer Night's Dream"],nat:'British'},
+  {id:'bach',d:'music',n:'Johann Sebastian Bach',b:1685,e:1750,mv:'Baroque',bio:'German composer who brought Baroque counterpoint to its supreme pinnacle. The Well-Tempered Clavier and St. Matthew Passion are foundational works of Western music.',wk:['The Well-Tempered Clavier','St. Matthew Passion','Goldberg Variations'],nat:'German'},
+  {id:'rembrandt',d:'art',n:'Rembrandt',b:1606,e:1669,mv:'Baroque',bio:"Dutch master renowned for psychological penetration and luminous chiaroscuro. His self-portraits form one of history's most profound records of a human life.",wk:['The Night Watch','The Anatomy Lesson','Self-Portrait with Two Circles'],nat:'Dutch'},
+  {id:'caravaggio',d:'art',n:'Caravaggio',b:1571,e:1610,mv:'Baroque',bio:'Revolutionary Italian painter who pioneered tenebrism — dramatic contrasts of light and shadow that transformed European painting forever.',wk:['The Calling of Saint Matthew','Judith Beheading Holofernes','Supper at Emmaus'],nat:'Italian'},
+  {id:'monet',d:'art',n:'Claude Monet',b:1840,e:1926,mv:'Impressionism',bio:'Founder of French Impressionism whose series paintings — haystacks, cathedrals, water lilies — pursued the fugitive effects of light with obsessive devotion.',wk:['Water Lilies','Impression, Sunrise','Rouen Cathedral series'],nat:'French'},
+  {id:'debussy',d:'music',n:'Claude Debussy',b:1862,e:1918,mv:'Impressionism',bio:"French composer who dissolved classical harmony into shimmering, atmospheric sound. Prélude à l'après-midi d'un faune marks the beginning of musical Modernism.",wk:['Clair de lune','La Mer',"Prélude à l'après-midi d'un faune"],nat:'French'},
+  {id:'tolstoy',d:'literature',n:'Leo Tolstoy',b:1828,e:1910,mv:'Realism',bio:'Russian novelist whose War and Peace and Anna Karenina are among the greatest novels ever written — vast in historical scope yet intimate in psychological truth.',wk:['War and Peace','Anna Karenina','The Death of Ivan Ilyich'],nat:'Russian'},
+  {id:'woolf',d:'literature',n:'Virginia Woolf',b:1882,e:1941,mv:'Modernism',bio:'English novelist who pioneered stream-of-consciousness. Mrs Dalloway and To the Lighthouse are landmarks of literary Modernism and feminist thought.',wk:['Mrs Dalloway','To the Lighthouse',"A Room of One's Own"],nat:'British'},
+  {id:'picasso',d:'art',n:'Pablo Picasso',b:1881,e:1973,mv:'Cubism',bio:"Co-founder of Cubism and the 20th century's most transformative artist. His Blue Period, Rose Period, and Cubist canvases changed what art could be and mean.",wk:["Les Demoiselles d'Avignon",'Guernica','Girl Before a Mirror'],nat:'Spanish'},
+  {id:'joyce',d:'literature',n:'James Joyce',b:1882,e:1941,mv:'Modernism',bio:"Irish writer who shattered the novel's conventions with Ulysses. His stream-of-consciousness technique and linguistic invention changed literature forever.",wk:['Ulysses','Dubliners','A Portrait of the Artist as a Young Man'],nat:'Irish'},
+  {id:'stravinsky',d:'music',n:'Igor Stravinsky',b:1882,e:1971,mv:'Modernism',bio:"Russian-born composer who reinvented himself three times. The Rite of Spring's premiere caused a riot and permanently changed music's relationship to rhythm.",wk:['The Rite of Spring','The Firebird','Symphony of Psalms'],nat:'Russian'},
+  {id:'kahlo',d:'art',n:'Frida Kahlo',b:1907,e:1954,mv:'Surrealism',bio:'Mexican painter of searingly personal self-portraits. Her images of pain, identity, and Mexican culture are among the most powerful in 20th-century art.',wk:['The Two Fridas','Self-Portrait with Thorn Necklace','The Broken Column'],nat:'Mexican'},
+  {id:'coltrane',d:'music',n:'John Coltrane',b:1926,e:1967,mv:'Jazz',bio:'American saxophonist whose decade of evolution from hard bop to free jazz remains unmatched. A Love Supreme is among the greatest jazz albums ever recorded.',wk:['A Love Supreme','Giant Steps','My Favorite Things'],nat:'American'},
+  {id:'morrison',d:'literature',n:'Toni Morrison',b:1931,e:2019,mv:'Modernism',bio:"American novelist whose Beloved is the most important American novel of the late 20th century. She was the first Black woman to win the Nobel Prize in Literature.",wk:['Beloved','Song of Solomon','The Bluest Eye'],nat:'American'},
+  {id:'hokusai',d:'art',n:'Katsushika Hokusai',b:1760,e:1849,mv:'Edo Period',bio:'Japanese ukiyo-e master whose Thirty-Six Views of Mount Fuji became among the most reproduced images in art history. He influenced every major Impressionist painter in France.',wk:['The Great Wave off Kanagawa','Red Fuji','One Hundred Ghost Stories'],nat:'Japanese'},
+  {id:'dante',d:'literature',n:'Dante Alighieri',b:1265,e:1321,mv:'Medieval',bio:"Italian poet whose Divine Comedy is the supreme work of medieval literature and one of the foundational texts of Western civilization.",wk:['Divine Comedy','La Vita Nuova','De Monarchia'],nat:'Italian'},
+  {id:'hildegard',d:'music',n:'Hildegard von Bingen',b:1098,e:1179,mv:'Medieval',bio:'German abbess and composer who produced the largest surviving body of medieval music. Her visionary plainchant with wide leaps is strikingly unconventional.',wk:['Ordo Virtutum','O Euchari','Symphonia armonie celestium revelationum'],nat:'German'},
+  {id:'vinci',d:'art',n:'Leonardo da Vinci',b:1452,e:1519,mv:'Renaissance',bio:'Italian polymath who embodied the Renaissance ideal. The Mona Lisa and The Last Supper combine psychological depth with unparalleled technical mastery.',wk:['Mona Lisa','The Last Supper','Vitruvian Man'],nat:'Italian'},
+  {id:'gogh',d:'art',n:'Vincent van Gogh',b:1853,e:1890,mv:'Post-Impressionism',bio:'Dutch painter of volcanic emotional intensity whose swirling brushwork and vivid colors make him the most beloved artist in history.',wk:['The Starry Night','Sunflowers','Self-Portrait with Bandaged Ear'],nat:'Dutch'},
+  {id:'brahms',d:'music',n:'Johannes Brahms',b:1833,e:1897,mv:'Romanticism',bio:'German composer who reconciled Romantic expression with classical structure. His four symphonies and German Requiem are pillars of the concert repertoire.',wk:['Symphony No. 1','Piano Concerto No. 2','A German Requiem'],nat:'German'},
+  {id:'dickens',d:'literature',n:'Charles Dickens',b:1812,e:1870,mv:'Realism',bio:"England's most popular Victorian novelist and fierce social critic. His serialized novels transformed public opinion on poverty, child labor, and injustice.",wk:['Great Expectations','A Tale of Two Cities','Oliver Twist'],nat:'British'},
+  {id:'verdi',d:'music',n:'Giuseppe Verdi',b:1813,e:1901,mv:'Opera',bio:'Italian opera composer who was both a supreme musical dramatist and a symbol of Italian national unity.',wk:['Rigoletto','La Traviata','Aida'],nat:'Italian'},
+  {id:'warhol',d:'art',n:'Andy Warhol',b:1928,e:1987,mv:'Pop Art',bio:"American artist who made consumer culture the subject of fine art. His Campbell's Soup Cans and Marilyn prints dissolved the boundary between commerce and high art.",wk:["Campbell's Soup Cans",'Marilyn Diptych','Shot Sage Blue Marilyn'],nat:'American'},
+  {id:'garcia',d:'literature',n:'Gabriel García Márquez',b:1927,e:2014,mv:'Magical Realism',bio:'Colombian novelist who launched magical realism into world consciousness with One Hundred Years of Solitude. He won the Nobel Prize in 1982.',wk:['One Hundred Years of Solitude','Love in the Time of Cholera','The Autumn of the Patriarch'],nat:'Colombian'},
+  {id:'miles',d:'music',n:'Miles Davis',b:1926,e:1991,mv:'Jazz',bio:'American jazz trumpeter who pioneered bebop, cool jazz, modal jazz, and fusion across six decades. Kind of Blue is the best-selling jazz album in history.',wk:['Kind of Blue','Bitches Brew','Birth of the Cool'],nat:'American'},
+  {id:'pollock',d:'art',n:'Jackson Pollock',b:1912,e:1956,mv:'Abstract Expressionism',bio:'Pioneer of Action Painting whose drip canvases abandoned the easel entirely, making the act of painting as important as the result.',wk:['No. 5, 1948','Lavender Mist','Convergence'],nat:'American'},
+  {id:'kafka',d:'literature',n:'Franz Kafka',b:1883,e:1924,mv:'Modernism',bio:'Czech-German author whose nightmarish bureaucratic visions gave language a new word: Kafkaesque. The Metamorphosis and The Trial haunt like no others.',wk:['The Metamorphosis','The Trial','The Castle'],nat:'Czech-German'},
+  {id:'schumann',d:'music',n:'Robert Schumann',b:1810,e:1856,mv:'Romanticism',bio:'German composer of searching introspection who championed both Brahms and Chopin. His piano cycles are among Romanticism\'s most personal works.',wk:['Kinderszenen','Piano Concerto in A minor','Dichterliebe'],nat:'German'},
+  {id:'liszt',d:'music',n:'Franz Liszt',b:1811,e:1886,mv:'Romanticism',bio:"The 19th century's greatest piano virtuoso who invented the symphonic poem and pushed harmonic language toward its dissolution.",wk:['Hungarian Rhapsodies','Transcendental Études','Piano Sonata in B minor'],nat:'Hungarian'},
+  {id:'austen',d:'literature',n:'Jane Austen',b:1775,e:1817,mv:'Romanticism',bio:'English novelist of incomparable irony and social intelligence whose novels chart women navigating marriage, money, and morality in Regency England.',wk:['Pride and Prejudice','Emma','Sense and Sensibility'],nat:'British'},
+  {id:'hugo',d:'literature',n:'Victor Hugo',b:1802,e:1885,mv:'Romanticism',bio:'The towering figure of 19th-century French letters whose Les Misérables and Notre-Dame de Paris are monuments of the Romantic novel.',wk:['Les Misérables','Notre-Dame de Paris','The Hunchback of Notre-Dame'],nat:'French'},
+  {id:'klimt',d:'art',n:'Gustav Klimt',b:1862,e:1918,mv:'Symbolism',bio:"Austrian Symbolist whose gold-leaf canvases blend sensuality, ornament, and mystery into icons of the Viennese fin de siècle.",wk:['The Kiss','Portrait of Adele Bloch-Bauer I','Judith I'],nat:'Austrian'},
+  {id:'munch',d:'art',n:'Edvard Munch',b:1863,e:1944,mv:'Expressionism',bio:'Norwegian painter whose work maps the extremes of anxiety and mortality. The Scream has become the universal icon of modern psychological dread.',wk:['The Scream','The Dance of Life','Madonna'],nat:'Norwegian'},
+  {id:'billie',d:'music',n:'Billie Holiday',b:1915,e:1959,mv:'Jazz',bio:'American jazz singer whose behind-the-beat phrasing and emotional nakedness transformed vocal interpretation. Strange Fruit was called the song of the century.',wk:['Strange Fruit','God Bless the Child','Lady Sings the Blues'],nat:'American'},
+  {id:'eliot',d:'literature',n:'George Eliot',b:1819,e:1880,mv:'Realism',bio:'English novelist whose Middlemarch is widely considered the greatest English novel. She wrote under a male pseudonym to ensure her work was taken seriously.',wk:['Middlemarch','The Mill on the Floss','Silas Marner'],nat:'British'},
+  {id:'proust',d:'literature',n:'Marcel Proust',b:1871,e:1922,mv:'Modernism',bio:'French novelist whose seven-volume In Search of Lost Time is perhaps the greatest novel ever written — a meditation on memory, time, and consciousness.',wk:['In Search of Lost Time',"Swann's Way",'Within a Budding Grove'],nat:'French'},
+  {id:'tagore',d:'literature',n:'Rabindranath Tagore',b:1861,e:1941,mv:'Modernism',bio:'Bengali poet who became the first non-European to win the Nobel Prize in Literature in 1913. He composed the national anthems of India and Bangladesh.',wk:['Gitanjali','The Home and the World','Gora'],nat:'Indian'},
+  {id:'ravel',d:'music',n:'Maurice Ravel',b:1875,e:1937,mv:'Impressionism',bio:'French composer of meticulous craftsmanship. Bolero — a single melody over a relentlessly growing crescendo — became one of the most performed orchestral works in history.',wk:['Bolero','La Valse','Piano Concerto in G major'],nat:'French'},
+  {id:'pushkin',d:'literature',n:'Alexander Pushkin',b:1799,e:1837,mv:'Romanticism',bio:'The father of Russian literature whose Eugene Onegin established the modern Russian literary tradition. He died in a duel at 37.',wk:['Eugene Onegin','The Bronze Horseman','Boris Godunov'],nat:'Russian'},
+  {id:'wagner',d:'music',n:'Richard Wagner',b:1813,e:1883,mv:'Romanticism',bio:"Revolutionary German composer whose Ring Cycle is music drama's Everest. His chromatic harmony dissolved tonality's foundations.",wk:['The Ring Cycle','Tristan und Isolde','Parsifal'],nat:'German'},
+  {id:'tchaik',d:'music',n:'Pyotr Tchaikovsky',b:1840,e:1893,mv:'Romanticism',bio:'Russian composer whose ballets — Swan Lake, Sleeping Beauty, The Nutcracker — remain the most performed in history.',wk:['Swan Lake','1812 Overture','Piano Concerto No. 1'],nat:'Russian'},
+  {id:'cezanne',d:'art',n:'Paul Cézanne',b:1839,e:1906,mv:'Post-Impressionism',bio:'The father of modern art whose geometric analysis of form directly inspired Cubism.',wk:['The Card Players','Mont Sainte-Victoire series','The Large Bathers'],nat:'French'},
+  {id:'george-sand',d:'literature',n:'George Sand',b:1804,e:1876,mv:'Romanticism',bio:"French novelist and unconventional figure who was among Europe's most widely read writers and had a celebrated love affair with Chopin.",wk:['Indiana','Lélia','The Devil\'s Pool'],nat:'French'},
+  {id:'morisot',d:'art',n:'Berthe Morisot',b:1841,e:1895,mv:'Impressionism',bio:"The leading female Impressionist and the only woman to exhibit in the first Impressionist show of 1874. Her intimate canvases of domestic life are among the movement's most assured works.",wk:["The Cradle","Summer's Day","Woman at Her Toilette"],nat:'French'},
+  {id:'billouis',d:'music',n:'Louis Armstrong',b:1901,e:1971,mv:'Jazz',bio:'American trumpeter who effectively invented jazz improvisation as an art form. His Hot Five recordings set the standard for jazz musicianship.',wk:['West End Blues','What a Wonderful World','Hello, Dolly!'],nat:'American'},
+];
+
+// ── CONSTANTS ──────────────────────────────────────────────────────
+const YS=1098, YE=2025, HDR=56, SCR=52;
+const YEARS_VIS = 320; // years visible on screen at once — "zoom level"
+
+// ── STATE ──────────────────────────────────────────────────────────
+let scY=0.68, tgt=0.68;
+let selId=null, hovId=null, modalOpen=false, isDrag=false;
+let featuredId=null; // the figure currently "arriving" in the narrative moment
+
+const cv=document.getElementById('cv');
+const ctx=cv.getContext('2d');
+const W=()=>document.body.classList.contains('drawer-open')
+  ? window.innerWidth-380
+  : window.innerWidth;
+const H=()=>window.innerHeight;
+const usableH=()=>H()-HDR-SCR;
+const topY=()=>HDR;
+const centerY=()=>topY()+(usableH()/2);
+
+function resize(){
+  const dpr=window.devicePixelRatio||1;
+  // Set canvas physical pixel dimensions at device resolution
+  cv.width=W()*dpr;
+  cv.height=H()*dpr;
+  // Keep CSS display size at CSS pixel dimensions
+  cv.style.width=W()+'px';
+  cv.style.height=H()+'px';
+  // Scale all drawing operations up by dpr so coordinates stay in CSS pixels
+  ctx.scale(dpr,dpr);
+  draw();
+}
+
+// ── TIME MATH ──────────────────────────────────────────────────────
+function y2s(y){return 1-(y-YS)/(YE-YS);}
+function s2y(s){return Math.round(YS+(1-s)*(YE-YS));}
+function y2py(year){
+  const cur=s2y(scY);
+  const pxPerYr=usableH()/YEARS_VIS;
+  return centerY()-(year-cur)*pxPerYr;
+}
+
+// "Depth" — how far a figure is from the current view center
+// This creates the scale/opacity falloff that implies distance
+function depthOf(year){
+  const cur=s2y(scY);
+  const dist=Math.abs(year-cur);
+  const maxD=YEARS_VIS*0.52;
+  const t=Math.min(1,dist/maxD);
+  return{scale:1-t*0.55, opacity:Math.max(0.06,1-t*0.82), t, dist};
+}
+
+// ── LANE LAYOUT — three equal parallel columns ──────────────────────
+function laneX(i){return i*(W()/3);}
+function laneCX(i){return laneX(i)+W()/6;}
+function laneW(){return W()/3;}
+
+// ── STAGGER OFFSETS for dense periods ──────────────────────────────
+function computeOff(){
+  const off={};
+  DISCS.forEach(disc=>{
+    const fs=FIGS.filter(f=>f.d===disc).sort((a,b)=>a.b-b.b);
+    const groups=[];
+    fs.forEach(fig=>{
+      const g=groups.find(g=>g.some(f=>Math.abs(f.b-fig.b)<14));
+      if(g)g.push(fig);else groups.push([fig]);
+    });
+    groups.forEach(g=>{
+      if(g.length===1){off[g[0].id]=0;return;}
+      const step=1.4/Math.max(g.length-1,1);
+      g.forEach((fig,i)=>{off[fig.id]=-0.7+i*step;});
+    });
+  });
+  return off;
+}
+const OFF=computeOff();
+
+// ── FIND FEATURED FIGURE — the one closest to center ───────────────
+function getFeatured(){
+  const curYr=s2y(scY);
+  let best=null, bestDist=Infinity;
+  FIGS.forEach(fig=>{
+    const py=y2py(fig.b);
+    const screenDist=Math.abs(py-centerY());
+    // Only feature if within a window around center
+    if(screenDist<90&&screenDist<bestDist){
+      bestDist=screenDist;
+      best=fig;
+    }
+  });
+  return best;
+}
+
+// ── NARRATIVE OVERLAY — the display moment ─────────────────────────
+let narrTimeout=null;
+function updateNarrative(fig){
+  const narr=document.getElementById('narr');
+  if(modalOpen){narr.innerHTML='';clearConnLines();return;}
+  if(!fig){
+    // Fade out — use opacity transition
+    const existing=narr.querySelectorAll('.narr-name,.narr-bio,.narr-year');
+    existing.forEach(el=>{el.style.opacity='0';el.style.transform='translateY(4px)';});
+    clearTimeout(narrTimeout);
+    narrTimeout=setTimeout(()=>{narr.innerHTML='';clearConnLines();},400);
+    return;
+  }
+  if(featuredId===fig.id)return; // already showing
+  featuredId=fig.id;
+
+  const di=DISCS.indexOf(fig.d);
+  const dc=DC[fig.d];
+  const py=y2py(fig.b);
+  const cx=laneCX(di)+(OFF[fig.id]||0)*laneW()*0.28;
+
+  // "Display moment" — the large serif name
+  // Position the name left or right of center depending on which lane
+  const nameX = di===0 ? cx+28 : di===2 ? cx-28 : cx;
+  const nameAlign = di===0 ? 'left' : di===2 ? 'right' : 'center';
+  const nameTransX = di===0 ? '0' : di===2 ? '-100%' : '-50%';
+
+  narr.innerHTML=`
+    <div class="narr-year" style="
+      left:${nameX}px;
+      top:${Math.max(HDR+20, py-72)}px;
+      transform:translateX(${nameTransX}) translateY(0);
+      opacity:0;
+      text-align:${nameAlign};
+    ">${fig.b}–${fig.e} · ${fig.nat}</div>
+    <div class="narr-name" style="
+      left:${nameX}px;
+      top:${Math.max(HDR+36, py-52)}px;
+      transform:translateX(${nameTransX}) translateY(6px);
+      font-size:clamp(28px,3.5vw,52px);
+      color:#000000;
+      opacity:0;
+      text-align:${nameAlign};
+    ">${fig.n}</div>
+    <div class="narr-bio" style="
+      left:${di===2 ? 'auto' : nameX+'px'};
+      right:${di===2 ? (W()-nameX)+'px' : 'auto'};
+      top:${Math.min(H()-SCR-100, py+14)}px;
+      transform:translateX(0) translateY(4px);
+      text-align:${nameAlign};
+      opacity:0;
+      max-width:260px;
+    ">${fig.bio.split('.')[0]}.</div>
+  `;
+
+  // Staggered reveal — "animation choreography"
+  requestAnimationFrame(()=>{
+    const els=narr.querySelectorAll('.narr-year,.narr-name,.narr-bio');
+    els.forEach((el,i)=>{
+      setTimeout(()=>{
+        el.style.opacity='1';
+        el.style.transform=el.classList.contains('narr-name')
+          ? `translateX(${nameTransX}) translateY(0)`
+          : el.style.transform.replace('translateY(4px)','translateY(0)').replace('translateY(6px)','translateY(0)');
+      },i*80);
+    });
+  });
+
+  // Draw connection lines to contemporaries
+  drawConnLines(fig);
+}
+
+// ── CONNECTION LINES — "connective tissue" ──────────────────────────
+// These are the lines that show cross-disciplinary relationships.
+// SVG paths animated with stroke-dasharray/stroke-dashoffset.
+function drawConnLines(fig){
+  const svg=document.getElementById('connSvg');
+  const di=DISCS.indexOf(fig.d);
+  const cx=laneCX(di)+(OFF[fig.id]||0)*laneW()*0.28;
+  const cy=y2py(fig.b);
+
+  const conts=FIGS.filter(f=>
+    f.id!==fig.id &&
+    f.d!==fig.d &&
+    f.b<=fig.e+3 && f.e>=fig.b-3
+  ).slice(0,6);
+
+  let paths='';
+  conts.forEach(cont=>{
+    const ci=DISCS.indexOf(cont.d);
+    const ccx=laneCX(ci)+(OFF[cont.id]||0)*laneW()*0.28;
+    const ccy=y2py(cont.b);
+    const dc=DC[cont.d];
+
+    // Bezier curve — a smooth "S" curve connecting two points
+    const midX=(cx+ccx)/2;
+    paths+=`<path
+      d="M ${cx} ${cy} C ${midX} ${cy}, ${midX} ${ccy}, ${ccx} ${ccy}"
+      fill="none"
+      stroke="${dc.color}"
+      stroke-width="1"
+      stroke-dasharray="1000"
+      stroke-dashoffset="1000"
+      opacity="0.65"
+      style="animation: drawLine 0.6s ease forwards; animation-delay:${Math.random()*0.2}s"
+    />
+    <circle cx="${ccx}" cy="${ccy}" r="3" fill="${dc.color}" opacity="0.6"/>
+    <text x="${ccx}" y="${ccy-7}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="${dc.color}" opacity="0.7">${cont.n.split(' ').pop()}</text>
+    `;
+  });
+  svg.innerHTML=paths;
+}
+
+function clearConnLines(){document.getElementById('connSvg').innerHTML='';}
+
+// ── DRAW — canvas rendering ─────────────────────────────────────────
+function draw(){
+  ctx.clearRect(0,0,W(),H());
+  const uH=usableH(), tY=topY();
+
+  // White background — "ground plane"
+  ctx.fillStyle='#FFFFFF';
+  ctx.fillRect(0,0,W(),H());
+
+  // Lane backgrounds — accent colors at very low opacity (5-7%)
+  // This is called "color wash" — barely there but perceptible
+  DISCS.forEach((disc,i)=>{
+    const dc=DC[disc],x=laneX(i),lw=laneW();
+    // No lane tint — pure white background for maximum contrast
+  });
+
+  // Lane dividers — 1px lines in near-black
+  // "Hairline" — a very thin structural line
+  [1,2].forEach(i=>{
+    const x=laneX(i);
+    ctx.beginPath();ctx.moveTo(x,tY);ctx.lineTo(x,tY+uH);
+    ctx.strokeStyle='rgba(0,0,0,0.14)';ctx.lineWidth=1;ctx.stroke();
+  });
+
+  // Lane labels — small uppercase, bottom of each lane
+  DISCS.forEach((disc,i)=>{
+    const dc=DC[disc];
+    ctx.font="500 9px 'DM Sans',sans-serif";
+    ctx.fillStyle='rgba(0,0,0,0.3)';ctx.textAlign='center';ctx.globalAlpha=1;
+    ctx.fillText(dc.label.toUpperCase(),laneCX(i),tY+uH-12);
+    ctx.globalAlpha=1;
+  });
+
+  // Era bands — alternating "zone" markers
+  let lastLY=-999;
+  ERAS.forEach((era,idx)=>{
+    const yT=y2py(era.e),yB=y2py(era.s);
+    if(yB<tY||yT>tY+uH)return;
+    const cT=Math.max(tY,yT),cB=Math.min(tY+uH,yB);
+    const bH=cB-cT;if(bH<1)return;
+    ctx.fillStyle=idx%2===0?'rgba(0,0,0,0)':'rgba(0,0,0,0.03)';
+    ctx.fillRect(0,cT,W(),bH);
+    if(bH>16&&Math.abs((cT+bH/2)-lastLY)>22){
+      const lY=cT+bH/2;
+      ctx.font="500 8.5px 'DM Sans',sans-serif";
+      ctx.fillStyle='rgba(0,0,0,0.38)';ctx.textAlign='left';
+      ctx.fillText(era.n.toUpperCase(),12,lY+3);
+      lastLY=lY;
+    }
+  });
+
+  // Center hairline — "anchor line" showing present scroll position
+  const cY=centerY();
+  ctx.beginPath();ctx.setLineDash([2,6]);
+  ctx.moveTo(0,cY);ctx.lineTo(W(),cY);
+  ctx.strokeStyle='rgba(0,0,0,0.06)';ctx.lineWidth=1;ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Year label at center
+  ctx.font="400 9px 'DM Sans',sans-serif";
+  ctx.fillStyle='rgba(0,0,0,0.18)';ctx.textAlign='right';
+  ctx.fillText(s2y(scY).toString(),W()-14,cY-5);
+
+  // Edge fade — "vignette" on top and bottom for infinite feel
+  [0,1].forEach(side=>{
+    const grad=ctx.createLinearGradient(0,side?tY+uH-80:tY,0,side?tY+uH:tY+80);
+    grad.addColorStop(side?1:0,'rgba(255,255,255,0.95)');
+    grad.addColorStop(side?0:1,'rgba(255,255,255,0)');
+    ctx.fillStyle=grad;ctx.fillRect(0,side?tY+uH-80:tY,W(),80);
+  });
+
+  // ── FIGURES ────────────────────────────────────────────────────────
+  const figScreens=[];
+  const featured=getFeatured();
+
+  FIGS.forEach(fig=>{
+    const py=y2py(fig.b);
+    if(py<tY-50||py>tY+uH+50)return;
+    const di=DISCS.indexOf(fig.d),dc=DC[fig.d];
+    const dep=depthOf(fig.b);
+    const xOff=(OFF[fig.id]||0)*laneW()*0.28;
+    const x=laneCX(di)+xOff;
+
+    const isSel=selId===fig.id;
+    const isFeat=featured&&fig.id===featured.id;
+    const isHov=hovId===fig.id;
+    const isDim=selId&&!isSel&&!modalOpen;
+
+    // Size: featured/selected get larger — "visual weight" hierarchy
+    const r=dep.scale*(isSel?9:isFeat?7:isHov?6.5:4.5);
+    const a=dep.opacity*(isDim?0.07:1);
+
+    ctx.globalAlpha=a;
+
+    // Subtle glow only on selected/featured — kept minimal for B&W aesthetic
+    if(isSel||isFeat){
+      const grd=ctx.createRadialGradient(x,py,0,x,py,r*2.8);
+      grd.addColorStop(0,dc.color+'28');grd.addColorStop(1,dc.color+'00');
+      ctx.fillStyle=grd;ctx.beginPath();ctx.arc(x,py,r*2.8,0,Math.PI*2);ctx.fill();
+    }
+
+    // Dot — always filled with discipline color. This is color isolation:
+    // the dot is the ONLY colored element, so it reads clearly on B&W.
+    // "Fill opacity" scales with focus state for visual hierarchy.
+    const dotAlpha = isSel||isFeat||isHov ? 1 : 0.65;
+    ctx.beginPath();ctx.arc(x,py,r,0,Math.PI*2);
+    ctx.fillStyle=dc.color;
+    ctx.globalAlpha=a*dotAlpha;
+    ctx.fill();
+    // Subtle black ring on selected for additional emphasis
+    if(isSel||isFeat){
+      ctx.strokeStyle='rgba(0,0,0,0.2)';
+      ctx.lineWidth=isSel?1.5:1;ctx.stroke();
+    }
+    ctx.globalAlpha=a;
+
+    // Selected ring — "focus ring" in accessibility terms
+    if(isSel){
+      ctx.beginPath();ctx.arc(x,py,r+5,0,Math.PI*2);
+      ctx.strokeStyle='rgba(0,0,0,0.15)';ctx.lineWidth=1;
+      ctx.globalAlpha=a;ctx.stroke();
+    }
+
+    // Name — only show at reasonable depth and not dimmed
+    // Near figures get larger type — part of the typographic scale
+    if(!isDim&&!isFeat&&dep.t<0.65){
+      const fs=Math.max(9,Math.min(12,10.5*dep.scale+2));
+      ctx.font=`400 ${fs}px 'DM Sans',sans-serif`;
+      ctx.fillStyle=`rgba(0,0,0,${0.6+dep.scale*0.3})`;
+      ctx.textAlign='center';
+      ctx.fillText(fig.n.split(' ').pop(),x,py-r-5); // last name only for space
+    }
+
+    ctx.globalAlpha=1;
+    figScreens.push({fig,x,y:py,r});
+  });
+
+  window._fs=figScreens;
+}
+
+// ── ANIMATION LOOP ──────────────────────────────────────────────────
+function animate(){
+  const d=tgt-scY;
+  if(Math.abs(d)>0.0002){
+    scY+=d*0.065;
+    draw();
+    updScr();updEra();
+
+    // Update narrative when featured figure changes
+    const feat=getFeatured();
+    if(!modalOpen){
+      if(feat&&feat.id!==featuredId){
+        updateNarrative(feat);
+      } else if(!feat&&featuredId){
+        featuredId=null;
+        updateNarrative(null);
+      }
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+// ── SCROLL ──────────────────────────────────────────────────────────
+window.addEventListener('wheel',e=>{
+  if(modalOpen)return;e.preventDefault();
+  tgt=Math.max(0,Math.min(1,tgt+e.deltaY*0.00032));
+},{passive:false});
+
+// ── INTERACTION ─────────────────────────────────────────────────────
+cv.addEventListener('mousemove',e=>{
+  if(modalOpen)return;
+  const mx=e.clientX,my=e.clientY;
+  let found=null,minD=30;
+  (window._fs||[]).forEach(({fig,x,y,r})=>{
+    const d=Math.sqrt((x-mx)**2+(y-my)**2);
+    if(d<Math.max(20,r*2.8)&&d<minD){minD=d;found=fig.id;}
+  });
+  if(found!==hovId){hovId=found;cv.style.cursor=found?'pointer':'default';draw();}
+});
+
+cv.addEventListener('click',e=>{
+  if(modalOpen)return;
+  const mx=e.clientX,my=e.clientY;
+  let found=null,minD=34;
+  (window._fs||[]).forEach(({fig,x,y,r})=>{
+    const d=Math.sqrt((x-mx)**2+(y-my)**2);
+    if(d<Math.max(22,r*3)&&d<minD){minD=d;found=fig;}
+  });
+  if(found)openModal(found);
+});
+
+// ── MODAL ───────────────────────────────────────────────────────────
+function openModal(fig){
+  selId=fig.id;modalOpen=true;
+  featuredId=null;
+  document.getElementById('narr').innerHTML='';
+  clearConnLines();
+  draw();
+  const dc=DC[fig.d];
+  const conts=FIGS.filter(f=>f.id!==fig.id&&f.b<=fig.e+5&&f.e>=fig.b-5)
+    .sort((a,b)=>(Math.min(b.e,fig.e)-Math.max(b.b,fig.b))-(Math.min(a.e,fig.e)-Math.max(a.b,fig.b)))
+    .slice(0,18);
+
+  document.getElementById('mleft').innerHTML=`
+    <span class="mbadge" style="${dc.badge}">
+      <span style="width:5px;height:5px;border-radius:50%;background:${dc.color};display:inline-block"></span>
+      ${dc.label}
+    </span>
+    <div class="mname">${fig.n}</div>
+    <div class="mmeta">${fig.b}–${fig.e} &nbsp;·&nbsp; ${fig.nat} &nbsp;·&nbsp; ${fig.mv}</div>
+    <div class="mdiv"></div>
+    <div class="mbio">${fig.bio}</div>
+    <div class="mlbl">Notable Works</div>
+    <div>${fig.wk.map(w=>`<div class="mw">${w}</div>`).join('')}</div>`;
+
+  let rh=`<div class="mlbl" style="margin-bottom:16px">Contemporaries &nbsp;·&nbsp; ${conts.length} figures</div><div class="mcc">`;
+  DISCS.forEach(disc=>{
+    const dc2=DC[disc],ds=conts.filter(f=>f.d===disc);
+    rh+=`<div><div class="mcdl" style="color:${dc2.color}">${dc2.label}</div>
+      ${ds.map(f=>`<div class="mcf" onclick="swFig('${f.id}')">
+        <span class="mcfd" style="background:${dc2.color}"></span>
+        <span class="mcfn">${f.n}</span><span class="mcft">${f.b}–${f.e}</span>
+      </div>`).join('')}</div>`;
+  });
+  rh+='</div>';
+  document.getElementById('mright').innerHTML=rh;
+  document.getElementById('modal').classList.add('open');
+  document.body.classList.add('drawer-open');
+  setTimeout(()=>{resize();},20); // redraw canvas at new width
+  tgt=Math.max(0,Math.min(1,y2s((fig.b+fig.e)/2)));
+}
+
+function closeModal(){
+  modalOpen=false;
+  document.getElementById('modal').classList.remove('open');
+  document.body.classList.remove('drawer-open');
+  setTimeout(()=>{resize();},20);
+  selId=null;featuredId=null;draw();
+}
+function swFig(id){const f=FIGS.find(f=>f.id===id);if(f)openModal(f);}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+// ── SCRUBBER ────────────────────────────────────────────────────────
+function updScr(){
+  const p=scY*100;
+  document.getElementById('sfill').style.width=p+'%';
+  document.getElementById('sthumb').style.left=p+'%';
+  document.getElementById('syear').textContent=s2y(scY);
+}
+function updEra(){
+  const yr=s2y(scY);
+  const era=ERAS.slice().reverse().find(e=>yr>=e.s)||ERAS[0];
+  document.getElementById('ep').textContent=`${era.n} · ${era.s}–${era.e}`;
+}
+const scrub=document.getElementById('scrub');
+scrub.addEventListener('mousedown',e=>{isDrag=true;setScr(e);});
+document.addEventListener('mousemove',e=>{if(isDrag)setScr(e);});
+document.addEventListener('mouseup',()=>{isDrag=false;});
+function setScr(e){const r=scrub.getBoundingClientRect();tgt=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));}
+
+// Tick marks
+function buildTicks(){
+  const el=document.getElementById('tks');
+  [1200,1400,1600,1800,2000].forEach(y=>{
+    const p=y2s(y)*100;
+    el.innerHTML+=`<span class="tk" style="left:${p}%">${y}</span>`;
+  });
+}
+
+// ── SEARCH ──────────────────────────────────────────────────────────
+function onSearch(val){
+  const dd=document.getElementById('sdd');
+  if(!val.trim()||val.length<2){dd.style.display='none';return;}
+  const q=val.toLowerCase();
+  const hits=FIGS.filter(f=>f.n.toLowerCase().includes(q)).slice(0,7);
+  if(hits.length){
+    dd.innerHTML=hits.map(f=>`<div class="sdi" onclick="selFig('${f.id}')">
+      <span class="sdot" style="background:${DC[f.d].color}"></span>
+      <span class="sn">${f.n}</span><span class="sm">${f.b}–${f.e} · ${DC[f.d].label}</span>
+    </div>`).join('');
+  }else{
+    dd.innerHTML=`<div class="se">
+      <div class="sem">"${val}" is not in Artline yet.</div>
+      <button class="ab" id="abtn" onclick="addFig('${val.replace(/'/g,"\\'")}')">
+        <span id="abtt">Add ${val} to Artline</span><span class="asp" id="aspin"></span>
+      </button>
+      <div class="an">We'll verify this person before adding them.</div>
+      <div class="ae" id="aerr"></div><div class="ao" id="aok"></div>
+    </div>`;
+  }
+  dd.style.display='block';
+}
+function selFig(id){const f=FIGS.find(f=>f.id===id);if(f){openModal(f);closeDd();}}
+function closeDd(){document.getElementById('sdd').style.display='none';document.getElementById('sinput').value='';}
+document.addEventListener('click',e=>{if(!e.target.closest('.sw'))closeDd();});
+
+// ── ADD ARTIST ──────────────────────────────────────────────────────
+const ASYS=`You are a cultural history data assistant. For the given person produce a JSON object. Required: id(f-slugified-name), d(art|music|literature), n(full name), b(birth year int), e(death year int or 2025 if living), mv(primary movement), bio(2-3 accurate sentences), wk(array of 3 notable works), nat(nationality adjective). Only for real historically significant artists/composers/authors. Otherwise respond exactly: NOT_FOUND. Respond with ONLY the JSON object.`;
+async function addFig(name){
+  const btn=document.getElementById('abtn'),txt=document.getElementById('abtt'),
+        sp=document.getElementById('aspin'),err=document.getElementById('aerr'),ok=document.getElementById('aok');
+  btn.disabled=true;txt.textContent='Verifying…';sp.style.display='inline-block';
+  err.style.display='none';ok.style.display='none';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,system:ASYS,messages:[{role:'user',content:`Add: ${name}`}]})});
+    const data=await res.json();
+    const raw=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('').trim();
+    if(raw==='NOT_FOUND'||raw.includes('NOT_FOUND')){
+      sp.style.display='none';err.textContent="Couldn't find enough verified information.";err.style.display='block';
+      btn.disabled=false;txt.textContent=`Add ${name}`;return;
+    }
+    const clean=raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();
+    let fig;try{fig=JSON.parse(clean);}catch(e){const m=raw.match(/\{[\s\S]*\}/);if(m)fig=JSON.parse(m[0]);else throw new Error();}
+    if(!fig.b||!fig.d||!fig.n)throw new Error('Incomplete');
+    FIGS.push(fig);
+    ok.textContent=`${fig.n} added!`;ok.style.display='block';sp.style.display='none';
+    setTimeout(()=>{closeDd();openModal(fig);},900);
+  }catch(e){
+    sp.style.display='none';err.textContent='Something went wrong. Try again.';err.style.display='block';
+    btn.disabled=false;txt.textContent=`Add ${name}`;
+  }
+}
+
+function surprise(){openModal(FIGS[Math.floor(Math.random()*FIGS.length)]);}
+
+// Touch
+let lt=null;
+cv.addEventListener('touchstart',e=>{lt=e.touches[0].clientY;},{passive:true});
+cv.addEventListener('touchmove',e=>{
+  if(!lt||modalOpen)return;
+  const dy=lt-e.touches[0].clientY;
+  tgt=Math.max(0,Math.min(1,tgt+dy*0.0009));
+  lt=e.touches[0].clientY;
+},{passive:true});
+
+// ── INIT ────────────────────────────────────────────────────────────
+resize();
+window.addEventListener('resize',resize);
+buildTicks();updScr();updEra();
+animate();
+</script>
+</body>
+</html>
